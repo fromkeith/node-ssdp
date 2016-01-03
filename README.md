@@ -2,10 +2,9 @@ This is a fork of diversario/node-ssdp to try enable SSDP on Chrome Apps.
 
 ## Limitations
 
-* Chrome does not currently support socket reuse
+* Chrome does not currently support socket reuse. As such, this will try close the socket you want before trying to open it.
 * As chrome sockets creation/modification is asynchronous, this API is not a direct match to diversario/node-ssdp
 * Still testing this; so there are bugs
-    * Does not properly close sockets on reload
     * Documentation below is not currently 100% accurate
     * broke cover testing as browserify doesn't like those methods of requires.
 
