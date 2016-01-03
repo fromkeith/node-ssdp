@@ -11,7 +11,8 @@
   "version": "2.6.5",
   "author": "Ilya Shaisultanov <ilya.shaisultanov@gmail.com>",
   "dependencies": {
-    "ip": "^1.0.1"
+    "ip": "^1.0.1",
+    "process": "^0.11.2"
   },
   "optionalDependencies": {
     "bunyan-prettystream": "~0.1.3",

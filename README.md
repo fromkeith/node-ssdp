@@ -1,18 +1,18 @@
-[![Build Status](https://travis-ci.org/diversario/node-ssdp.svg?branch=master)](https://travis-ci.org/diversario/node-ssdp)
-[![Coverage Status](https://img.shields.io/coveralls/diversario/node-ssdp.svg)](https://coveralls.io/r/diversario/node-ssdp?branch=master)
-[![Dependency Status](https://gemnasium.com/diversario/node-ssdp.png)](https://gemnasium.com/diversario/node-ssdp)
-[![NPM version](https://badge.fury.io/js/node-ssdp.svg)](http://badge.fury.io/js/node-ssdp)
-[![Stories in Ready](https://badge.waffle.io/diversario/node-ssdp.png?label=ready&title=Ready)](https://waffle.io/diversario/node-ssdp)
+This is a fork of diversario/node-ssdp to try enable SSDP on Chrome Apps.
 
-## Installation
+## Limitations
 
-```sh
-npm install node-ssdp
-```
+* Chrome does not currently support socket reuse
+* As chrome sockets creation/modification is asynchronous, this API is not a direct match to diversario/node-ssdp
+* Still testing this; so there are bugs
+    * Does not properly close sockets on reload
+    * Documentation below is not currently 100% accurate
+    * broke cover testing as browserify doesn't like those methods of requires.
 
-There is another package called `ssdp` which is the original unmaintained version. Make sure to install `node-ssdp` instead.
 
-## Usage - Client
+
+
+## Usage - Client (Untested)
 
 ```javascript
     var Client = require('node-ssdp').Client
@@ -30,39 +30,38 @@ There is another package called `ssdp` which is the original unmaintained versio
     client.search('ssdp:all');
 ```
 
-## Usage - Server
+## Usage - Server (Currently Testing)
 
 ```javascript
-    var Server = require('node-ssdp').Server
-      , server = new Server()
-    ;
+    var Server = require('node-ssdp').Server;
 
-    server.addUSN('upnp:rootdevice');
-    server.addUSN('urn:schemas-upnp-org:device:MediaServer:1');
-    server.addUSN('urn:schemas-upnp-org:service:ContentDirectory:1');
-    server.addUSN('urn:schemas-upnp-org:service:ConnectionManager:1');
+    // wait for the callback before adding an USNs.
+    var server = new SSDP({log: true}, undefined, function (err, server) {
+      server.addUSN('upnp:rootdevice');
+      server.addUSN('urn:schemas-upnp-org:device:MediaServer:1');
+      server.addUSN('urn:schemas-upnp-org:service:ContentDirectory:1');
+      server.addUSN('urn:schemas-upnp-org:service:ConnectionManager:1');
 
-    server.on('advertise-alive', function (headers) {
-      // Expire old devices from your cache.
-      // Register advertising device somewhere (as designated in http headers heads)
+      server.on('advertise-alive', function (headers) {
+        // Expire old devices from your cache.
+        // Register advertising device somewhere (as designated in http headers heads)
+      });
+
+      server.on('advertise-bye', function (headers) {
+        // Remove specified device from cache.
+      });
+
+      // start the server. Wait for the callback before advertising or sending.
+      server.start(function (err) {
+        console.log(err);
+      });
     });
 
-    server.on('advertise-bye', function (headers) {
-      // Remove specified device from cache.
-    });
-
-    // start the server
-    server.start();
-
-    process.on('exit', function(){
-      server.stop() // advertise shutting down and stop listening
-    })
 ```
 
-Take a look at `example` directory as well to see examples or client and server.
 
-##Configuration
-`new SSDP([options, [socket]])`
+##Configuration (not all options tested)
+`new SSDP([options, [socket], callback])`
 
 SSDP constructor accepts an optional configuration object and an optional initialized socket. At the moment, the following is supported:
 
@@ -80,7 +79,7 @@ SSDP constructor accepts an optional configuration object and an optional initia
 - `ttl` _Number_ Packet TTL. Default: `1800`.
 - `allowWildcards` _Boolean_ Accept wildcards (`*`) in `serviceTypes` of `M-SEARCH` packets, e.g. `usn:Belkin:device:**`. Default: `false`
 
-###Logging
+###Logging (not tested)
 Aside from `logLevel` configuration option you can set the level via an environment variable `LOG_LEVEL`, which overrides configuration.
 
 At log levels `DEBUG` and `TRACE` module will print call source location.
@@ -97,4 +96,3 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-[![Analytics](https://ga-beacon.appspot.com/UA-51511945-1/node-ssdp/README.md)](https://github.com/igrigorik/ga-beacon)
